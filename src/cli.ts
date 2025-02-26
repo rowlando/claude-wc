@@ -30,48 +30,56 @@ export function parseArgs(args: string[]): { options: Options, files: string[] }
     const arg = args[i];
 
     if (arg.startsWith('-')) {
-      // Handle option flags
-      if (arg === '-c') {
-        options.countBytes = true;
-      } else if (arg === '-l') {
-        options.countLines = true;
-      } else if (arg === '-w') {
-        options.countWords = true;
-      } else if (arg === '-m') {
-        options.countChars = true;
-      } else {
-        // Handle combined flags (e.g., -lwc)
-        for (let j = 1; j < arg.length; j++) {
-          const flag = arg[j];
-          if (flag === 'c') {
-            options.countBytes = true;
-          } else if (flag === 'l') {
-            options.countLines = true;
-          } else if (flag === 'w') {
-            options.countWords = true;
-          } else if (flag === 'm') {
-            options.countChars = true;
-          } else {
-            console.error(`Unknown option: ${flag}`);
-            process.exit(1);
-          }
-        }
-      }
+      handleOptionFlags(arg, options);
     } else {
-      // It's a filename
       files.push(arg);
     }
   }
 
-  // If no options are specified, use default behavior (equivalent to -c -l -w)
+  setDefaultOptionsIfNoneSpecified(options);
+
+  return { options, files };
+}
+
+function handleOptionFlags(arg: string, options: Options) {
+  if (arg === '-c') {
+    options.countBytes = true;
+  } else if (arg === '-l') {
+    options.countLines = true;
+  } else if (arg === '-w') {
+    options.countWords = true;
+  } else if (arg === '-m') {
+    options.countChars = true;
+  } else {
+    handleCombinedFlags(arg, options);
+  }
+}
+
+function handleCombinedFlags(arg: string, options: Options) {
+  for (let j = 1; j < arg.length; j++) {
+    const flag = arg[j];
+    if (flag === 'c') {
+      options.countBytes = true;
+    } else if (flag === 'l') {
+      options.countLines = true;
+    } else if (flag === 'w') {
+      options.countWords = true;
+    } else if (flag === 'm') {
+      options.countChars = true;
+    } else {
+      console.error(`Unknown option: ${flag}`);
+      process.exit(1);
+    }
+  }
+}
+
+function setDefaultOptionsIfNoneSpecified(options: Options) {
   const anyOptionSpecified = Object.values(options).some(value => value);
   if (!anyOptionSpecified) {
     options.countBytes = true;
     options.countLines = true;
     options.countWords = true;
   }
-
-  return { options, files };
 }
 
 /**
